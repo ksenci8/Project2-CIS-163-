@@ -1,32 +1,71 @@
-#work by Ksenija (from 26th to 27th of February)
+#Ksenija from 02/26 to 02/27
 #wrote class GamePiece
+#Caleb 02/27
+#fixed fuctionality of code working with starting code provided for the project
+#Ksenija 03/01
+#Wrote out the majority of the logic for checking if player is occupied by opponent
+#in is_valid_placement
 
+#starter code imports
+from position import Position
+from player_colors import PlayerColors
+#our code imports
 from placeble import Placeble
-from enum import Enum
-class Position:
-    def __init__(self, row, col):
-        if not isinstance(row, int) or not isinstance(col, int):
-            raise TypeError
-        self.row = row
-        self.col = col
+
 class GamePiece(Placeble):
     def __str__(self):
         return f'Color: {self.color}'
 
     def is_valid_placement(self, pos: Position, board):
-        if not isinstance(pos, Position):
-            raise TypeError
-        #checking if the position is within the board
-        if pos.row < 0 or pos.row >= len(board):
-            return False
-        if pos.col < 0 or pos.row > len(board[0]):
-            return False
-        #checking if the place on board is empty
-        if board[pos.row] and board[pos.col] is None:
-            return False
-        return True
+        left = board[pos.row][pos.col-1]
+        right = board[pos.row][pos.col+1]
+        up = board[pos.row-1][pos.col]
+        down = board[pos.row+1][pos.col]
+        occupied_count = 0
+        player_piece = PlayerColors.BLACK
+        opponent_piece = player_piece.opponent()
+        #checking left
+        if left == opponent_piece:
+            occupied_count +=1
+        #checking right
+        if right == opponent_piece:
+            occupied_count +=1
+        #checking up
+        if up == opponent_piece:
+            occupied_count +=1
+        #checking down
+        if down == opponent_piece:
+            occupied_count +=1
+        #Checking for corner scenarios, three places need to be occupied
+        last_row = len(board) - 1
+        last_col = len(board[0]) - 1
+        #First row
+        if pos.row == 0:
+            if pos.row > 0 and up == opponent_piece:
+                occupied_count +=1
+            if pos.col < last_col and right == opponent_piece:
+                occupied_count += 1
+            if down == opponent_piece:
+                occupied_count += 1
+        #Last row
+
+        #will be checked last
+        if occupied_count == 4:
+            return True
+
+
+
+
+
+
+
+        ''' I believe this will just use the parent function and then add on the checking for when
+        the user is trying to place a piece in a spot that is surrounded by the opponent's pieces'''
+
+
+
     #checking if two instances of GamePiece have the same color/value
-    def equals(self, other ):
+    def equals(self, other):
        if not isinstance(other, GamePiece):
            return False
        return True
