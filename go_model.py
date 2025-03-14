@@ -8,29 +8,33 @@ class UndoException(Exception):
 class GoModel:
     #constructor
 
-    def __init__(self, rows: int, cols: int):
+    def __init__(self, rows: int = 6, cols: int = 6):
         acceptable_values = [6, 9, 11, 13, 19]
         if not isinstance(current_player, GamePlayer):
             raise TypeError
-        if not isinstance(nrows, int):
+        if not isinstance(rows, int):
             raise TypeError
         # raising ValueError for nrows and ncols
-        if nrows not in acceptable_values or ncols not in acceptable_values:
+        if rows not in acceptable_values or cols not in acceptable_values:
             raise ValueError
-        if not isinstance(ncols, int):
+        if not isinstance(cols, int):
             raise TypeError
-        if not isinstance(board,List[List[GamePiece|None]]):
-            raise TypeError
+        # if not isinstance(board, ):
+        #     raise TypeError
         if not isinstance(message, str):
             raise TypeError
         if not isinstance(rows, int):
             raise TypeError
         if not isinstance(cols, int):
             raise TypeError
-        self.__current_player = current_player
-        self.__nrows = nrows
-        self.__ncols = ncols
-        self.__board = board
+        self.__current_player = PlayerColor.BLACK
+        self.__nrows = rows
+        self.__ncols = cols
+        self.__board = []
+        for x in range(rows):
+            self.__board.append([])
+            for _ in range(cols):
+                self.__board[x].append(None)
         self.__message = message
     # properties
     @property 
@@ -53,4 +57,6 @@ class GoModel:
         if not isinstance(mes, str):
             raise TypeError
         self.__message = mes
-    pass
+
+    def set_piece(self):
+        pass
