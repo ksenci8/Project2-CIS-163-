@@ -21,9 +21,9 @@ class GamePiece(Placeble):
     def is_valid_placement(self, pos: Position, board):
         if not super().is_valid_placement(pos, board):
             return False
+
         last_row = len(board) - 1
         last_col = len(board[0]) - 1
-
         #checks if the direction would cause an error if it wouldn't then it creates the direction
         # and appends it to adjacent which is a list to keep track of them
         adjacent = []
@@ -40,7 +40,7 @@ class GamePiece(Placeble):
             down = board[pos.row + 1][pos.col]
             adjacent.append(down)
 
-        player_piece = PlayerColors.BLACK
+        player_piece = self.color
         opponent_piece = player_piece.opponent()
         occupied_count = 0
 
@@ -62,16 +62,16 @@ class GamePiece(Placeble):
 
 
 
-pos = Position(0,2)
+pos = Position(4,4)
 board = [
-    [None, None, None, None, None],
-    [PlayerColors.WHITE, None, None, None, None],
-    [None, PlayerColors.WHITE, None, None, None],
-    [PlayerColors.WHITE, None, None, None, None],
-    [None, None, None, None, None]
+    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None],
+    [PlayerColors.BLACK, None, PlayerColors.BLACK, None, PlayerColors.BLACK],
+    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None],
+    [PlayerColors.BLACK, None, PlayerColors.BLACK, None, PlayerColors.BLACK],
+    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None]
 ]
 
-g = GamePiece(PlayerColors.BLACK)
+g = GamePiece(PlayerColors.WHITE)
 print(g.is_valid_placement(pos, board))
 
 # gamePiece1 = GamePiece(PlayerColors.BLACK)
