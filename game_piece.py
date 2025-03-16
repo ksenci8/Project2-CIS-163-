@@ -46,7 +46,9 @@ class GamePiece(Placeble):
 
         #iterates through adjacent tallying when there is an opponent piece
         for i in adjacent:
-            if i == opponent_piece:
+            if i is None:
+                pass
+            elif i == opponent_piece:
                 occupied_count += 1
         if occupied_count == len(adjacent):
             return False
@@ -55,28 +57,19 @@ class GamePiece(Placeble):
 
     #checking if two instances of GamePiece have the same color/value
     def __eq__(self, other):
-        if self.color == other.color:
+        if self.color == other:
            return True
         return False
 
 
+# board = [[None, None, GamePiece(PlayerColors.BLACK), None],
+#              [None, GamePiece(PlayerColors.BLACK), None, GamePiece(PlayerColors.BLACK)],
+#              [None, None, GamePiece(PlayerColors.BLACK), None],
+#              [None, None, None, None]]
+#
+# piece = GamePiece(PlayerColors.WHITE)
+# print(piece.is_valid_placement(Position(0, 0), board))
 
 
-pos = Position(4,4)
-board = [
-    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None],
-    [PlayerColors.BLACK, None, PlayerColors.BLACK, None, PlayerColors.BLACK],
-    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None],
-    [PlayerColors.BLACK, None, PlayerColors.BLACK, None, PlayerColors.BLACK],
-    [None, PlayerColors.BLACK, None, PlayerColors.BLACK, None]
-]
 
-g = GamePiece(PlayerColors.WHITE)
-print(g.is_valid_placement(pos, board))
-
-# gamePiece1 = GamePiece(PlayerColors.BLACK)
-# gamePiece2 = GamePiece(PlayerColors.BLACK)
-# gamePiece3 = GamePiece(PlayerColors.WHITE)
-# print(gamePiece1 == gamePiece2) # prints True
-# print(gamePiece1 == gamePiece3) # prints False
 
