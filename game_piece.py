@@ -8,6 +8,11 @@
 #Polished the is_valid_placement
 #Caleb 03/11
 #created is_valid_placement method
+#fixed functionality of code working with starting code provided for the project
+#Caleb 03/11
+#attempted at creating is_valid_placement method fixed equals method to __eq__
+#Caleb 03/11
+#polished is_valid_placement but still contains error when uploaded
 #Ksenija 03/12
 #Further work on is_valid_placement and testing
 #Caleb 03/11
@@ -54,8 +59,11 @@ class GamePiece(Placeble):
 
         last_row = len(board) - 1
         last_col = len(board[0]) - 1
+
         # checks if the direction would cause an error if it wouldn't then it creates the direction
-        # and appends it to adjacent which is a list to keep track of them
+
+        #checks if the direction would cause an error if it wouldn't then it creates the direction
+        #and appends it to adjacent which is a list to keep track of them
         adjacent = []
         if pos.col != 0:
             left = board[pos.row][pos.col - 1]
@@ -75,6 +83,7 @@ class GamePiece(Placeble):
         occupied_count = 0
 
         # iterates through adjacent tallying when there is an opponent piece
+        #iterates through adjacent tallying when there is an opponent piece
         for i in adjacent:
             if i is None:
                 pass
@@ -112,4 +121,14 @@ class GamePiece(Placeble):
 # gamePiece3 = GamePiece(PlayerColors.WHITE)
 # print(gamePiece1 == gamePiece2) # prints True
 # print(gamePiece1 == gamePiece3) # prints False
+# board = [[None, None, GamePiece(PlayerColors.BLACK), None],
+#              [None, GamePiece(PlayerColors.BLACK), None, GamePiece(PlayerColors.BLACK)],
+#              [None, None, GamePiece(PlayerColors.BLACK), None],
+#              [None, None, None, None]]
 #
+# piece = GamePiece(PlayerColors.WHITE)
+# print(piece.is_valid_placement(Position(0, 0), board))
+
+
+
+
