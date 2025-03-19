@@ -89,10 +89,9 @@ class GoModel:
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise IndexError ('Out of bounds.')
         if piece.is_valid_placement(pos, self.__board):
-            # self.moves.append(piece)
-            self.moves[self.move_num] = self.copy_board()
+            self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
             self.__board[pos.row][pos.col] = piece
-            self.move_num += 1
+            self.move_num += 1 #updates the number of moves done
         # print(f"Setting piece at ({pos.row}, {pos.col})")
 
 
@@ -121,7 +120,7 @@ class GoModel:
             return True
         return False
 
-    def is_valid_placement(self, pos, piece):
+    def is_valid_placement(self, pos, piece): #DOESN'T WORK yet
         if not piece.is_valid_placement(pos, self.board):
             self.message = 'Invalid Placement: Either Not within bounds, or Placement is already surrounded by opponent pieces'
             return False
@@ -132,16 +131,14 @@ class GoModel:
         return True
 
 
-    def undo(self):
-        if not self.moves:
+    def undo(self): #NEEDS FIXING for when undo() is ran right away and UndoException() should raise but doesn't
+        if not self.moves: #raises UndoException when
             raise UndoException('Nothing to Undo')
-        self.board = self.moves[self.move_num-1]
-        self.set_next_player()
-        self.previous_board = self.moves.pop(self.move_num-1)
-        self.move_num -= 1
-
-
-
+        self.board = self.moves[self.move_num-1] #takes the previous move_num (the keys for moves) which gives the board 1 move earlier
+        self.set_next_player() #switches the player turn to the other.
+        self.previous_board = self.moves.pop(self.move_num-1) #keeping previous hand is purely for the is_valid_placement check.
+        # but since its a pop its also for removing it
+        self.move_num -= 1 #brings the current move_num down 1
 
     def copy_board(self):
         b = []
@@ -154,11 +151,7 @@ class GoModel:
         return b
 
 
-
-
-
 g = GoModel()
-
 print(g.current_player)
 print(f'\ndefault moves:{g.moves} \n')
 pos1 = Position(1, 1)
