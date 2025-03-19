@@ -2,6 +2,7 @@
 #Wrote the constructor for GoModel and the appropriate properties
 #Caleb 03/18
 #worked on is_valid_placement checkin if placement reverts to the previous board position and undo method
+import copy
 from typing import List
 from game_player import GamePlayer
 from game_piece import GamePiece
@@ -29,11 +30,13 @@ class GoModel:
         self.__nrows = rows
         self.__ncols = cols
         self.__board = []
+        self.player1 = GamePlayer(PlayerColors.BLACK)
+        self.player2 = GamePlayer(PlayerColors.WHITE)
         for x in range(rows):
             self.__board.append([])
             for _ in range(cols):
                 self.__board[x].append(None)
-        self.__message = 'message'
+        self.__message = 'This is default value for message'
 
         #attributes I am experimenting with for undo()
         self.moves = {
@@ -55,10 +58,10 @@ class GoModel:
     @property
     def board(self):
         return self.__board
-    #I know board.setter is not specified in the project but I created for usage in undo()
-    @board.setter
-    def board(self, board):
-        self.__board = board
+    #I know board.setter is not specified in the project, but I created for usage in undo()
+    # @board.setter
+    # def board(self, board):
+    #     self.__board = board
     #message getter and setter
     @property
     def message(self):
@@ -75,10 +78,10 @@ class GoModel:
         is out of bounds.
         """
         # implemented the check from placeble
-        if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
-            raise IndexError ('Out of bounds.')
         if not isinstance(pos, Position):
             raise TypeError
+        if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
+            raise IndexError ('Out of bounds.')
         print(f"Getting piece at: ({pos.row}, {pos.col})")
         return self.__board[pos.row][pos.col]
 
@@ -99,15 +102,24 @@ class GoModel:
         """
         Changes the current player to the next, and thus, changes turn.
         """
-        player1 = GamePlayer(PlayerColors.BLACK)
-        player2 = GamePlayer(PlayerColors.WHITE)
-        self.__current_player = player1
-        opponent_player = player2
+        #two attributes
+        #if one, do the other
+        if self.__current_player == self.player1:
+            self.__current_player = self.player2
+        #same
+        elif self.__current_player == self.player2:
+            self.__current_player = self.player1
+        # else:
+        #     self.__current_player = GamePlayer(PlayerColors.BLACK)
+        # player1 = GamePlayer(PlayerColors.BLACK)
+        # player2 = GamePlayer(PlayerColors.WHITE)
+        # self.__current_player = player1
+        # opponent_player = player2
 
 
     def pass_turn(self):
         """
-        Skips the player's turn and updates the variable skip_count.
+        Skips the player's turn and updates the player's skip_count.
         """
         self.set_next_player()
         self.__current_player.skip_count += 1
@@ -120,11 +132,17 @@ class GoModel:
             return True
         return False
 
-    def is_valid_placement(self, pos, piece): #DOESN'T WORK yet
+    #DOESN'T WORK yet
+    def is_valid_placement(self, pos, piece):
         if not piece.is_valid_placement(pos, self.board):
-            self.message = 'Invalid Placement: Either Not within bounds, or Placement is already surrounded by opponent pieces'
+            self.message = ('Invalid Placement: Either not within bounds,\n'
+                            'or piece is already surrounded by opponent pieces')
             return False
-        temp_board = self.board
+        #temp_board = self.board
+        temp_board = self.copy_board()
+        print(f'This is temp board: {temp_board}')
+        print('=======')
+        print(f'This is board:{self.board}')
         temp_board[pos.row][pos.col] = piece
         if temp_board == self.previous_board:
             return False
@@ -141,32 +159,62 @@ class GoModel:
         self.move_num -= 1 #brings the current move_num down 1
 
     def copy_board(self):
-        b = []
-        loop = -1
-        for i in self.board:
-            b.append([])
-            loop += 1
-            for x in i:
-                b[loop].append(x)
-        return b
+        return copy.deepcopy(self.board)
 
 
-g = GoModel()
-print(g.current_player)
-print(f'\ndefault moves:{g.moves} \n')
-pos1 = Position(1, 1)
-piece1 = GamePiece(PlayerColors.BLACK)
+    # def copy_board(self):
+    #     b = []
+    #     # loop = -1
+    #     for row in self.board:
+    #         updated_row = []
+    #         # b.append([])
+    #         # loop += 1
+    #         #for x in i:
+    #         for square in row:
+    #             updated_row.append(square)
+    #         b.append(updated_row)
+    #     return b
 
-pos2 = Position(0, 0)
-piece2 = GamePiece(PlayerColors.WHITE)
 
-g.set_piece(pos1, piece1)
-g.set_piece(pos2, piece2)
-print(g.board)
-g.undo()
-print(g.board)
-g.set_piece(pos2, piece2)
-print(g.board)
+#Message works and the checks work
+# go = GoModel()
+# pos = Position(1, 1)
+# piece = GamePiece(PlayerColors.BLACK)
+#
+#
+# valid = go.is_valid_placement(pos, piece)
+# print(valid)  # Either True or False based on pos
+# print(go.message)  # Prints message
+go = GoModel()  # Assuming Game is the class with the methods
+go.pass_turn()  # Player 1 skips
+print(go.current_player)  # Should print WHITE (next player)
+
+go.pass_turn()  # Player 2 skips
+print(go.current_player)  # Should print BLACK (next player)
+
+# Check if game is over
+if go.is_game_over():
+    print("Game Over!")  # Should print over after two skips
+else:
+    print("Game continues.")
+
+
+# g = GoModel()
+# print(g.current_player)
+# print(f'\ndefault moves:{g.moves} \n')
+# pos1 = Position(1, 1)
+# piece1 = GamePiece(PlayerColors.BLACK)
+#
+# pos2 = Position(0, 0)
+# piece2 = GamePiece(PlayerColors.WHITE)
+#
+# g.set_piece(pos1, piece1)
+# g.set_piece(pos2, piece2)
+# print(g.board)
+# g.undo()
+# print(g.board)
+# g.set_piece(pos2, piece2)
+# print(g.board)
 
 # print(g.board)
 # print('moves:\n')
