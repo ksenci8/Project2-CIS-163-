@@ -2,6 +2,8 @@
 #Wrote the constructor for GoModel and the appropriate properties
 #Caleb 03/18
 #worked on is_valid_placement checkin if placement reverts to the previous board position and undo method
+#Caleb 03/19
+#worked on undo() and is_valid_placement. while working on those had to change somethings in the constructor and set_piece
 import copy
 from typing import List
 from game_player import GamePlayer
@@ -40,10 +42,12 @@ class GoModel:
 
         #attributes I am experimenting with for undo()
         self.moves = {
-            0 : self.board
+            0 : self.copy_board()
         }
-        self.move_num = 0
-        self.previous_board = []
+        self.move_num = 1
+
+        # previous board's default value needs to have the index but needs to have something in it that would never appear
+        self.previous_board = [['value that would never appear']]
 
     # Properties
     @property
@@ -91,9 +95,10 @@ class GoModel:
         """
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise IndexError ('Out of bounds.')
-        if piece.is_valid_placement(pos, self.__board):
-            self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
+        if self.is_valid_placement(pos, piece):
             self.__board[pos.row][pos.col] = piece
+            self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
+            # self.previous_board = self.moves.pop(self.move_num)
             self.move_num += 1 #updates the number of moves done
         # print(f"Setting piece at ({pos.row}, {pos.col})")
 
@@ -138,42 +143,55 @@ class GoModel:
             self.message = ('Invalid Placement: Either not within bounds,\n'
                             'or piece is already surrounded by opponent pieces')
             return False
-        #temp_board = self.board
+
         temp_board = self.copy_board()
-        print(f'This is temp board: {temp_board}')
-        print('=======')
-        print(f'This is board:{self.board}')
+
+        #temp_board = self.board
+        # print(f'This is temp board: {temp_board}')
+        # print('=======')
+        # print(f'This is board:{self.board}')
+
+        #adds the current piece being considered if it is valid
         temp_board[pos.row][pos.col] = piece
-        if temp_board == self.previous_board:
-            return False
-        return True
+
+        # uncomment line under if you want to see the 2 values being compared
+        print(f'\n\nprevious:{self.previous_board}\nwill be:{temp_board}\n\n')
+
+        #compares all the elements in the previous board verifying that
+        for row in range(len(temp_board)):
+            for col in range(len(temp_board)):
+                if temp_board[row][col] != self.previous_board[row][col]:
+                    return True
+        return False
+        # if temp_board == self.previous_board:
+        #     return False
 
 
-    def undo(self): #NEEDS FIXING for when undo() is ran right away and UndoException() should raise but doesn't
-        if not self.moves: #raises UndoException when
+
+    def undo(self):
+        if not self.moves or self.move_num == 1: #raises UndoException when out of undos or when its the very first turn
             raise UndoException('Nothing to Undo')
-        self.board = self.moves[self.move_num-1] #takes the previous move_num (the keys for moves) which gives the board 1 move earlier
+
+        # takes the previous move_num (the keys for moves) which gives the board 1 move earlier
+        # the for loop is copying self.moves[self.move_num-1]'s board to self.board without a setter
+        for row in range(len(self.board)):
+            for col in range(len(self.board)):
+                self.board[row][col] = self.moves[self.move_num-2][row][col]
+
         self.set_next_player() #switches the player turn to the other.
         self.previous_board = self.moves.pop(self.move_num-1) #keeping previous hand is purely for the is_valid_placement check.
         # but since its a pop its also for removing it
         self.move_num -= 1 #brings the current move_num down 1
 
+    #this way of copying board makes so that the GamePiece references are the same value
     def copy_board(self):
-        return copy.deepcopy(self.board)
-
-
-    # def copy_board(self):
-    #     b = []
-    #     # loop = -1
-    #     for row in self.board:
-    #         updated_row = []
-    #         # b.append([])
-    #         # loop += 1
-    #         #for x in i:
-    #         for square in row:
-    #             updated_row.append(square)
-    #         b.append(updated_row)
-    #     return b
+        b = []
+        for row in self.board:
+            updated_row = []
+            for square in row:
+                updated_row.append(square)
+            b.append(updated_row)
+        return b
 
 
 #Message works and the checks work
@@ -199,37 +217,33 @@ else:
     print("Game continues.")
 
 
-# g = GoModel()
+g = GoModel()
 # print(g.current_player)
 # print(f'\ndefault moves:{g.moves} \n')
-# pos1 = Position(1, 1)
-# piece1 = GamePiece(PlayerColors.BLACK)
-#
-# pos2 = Position(0, 0)
-# piece2 = GamePiece(PlayerColors.WHITE)
-#
-# g.set_piece(pos1, piece1)
-# g.set_piece(pos2, piece2)
-# print(g.board)
-# g.undo()
-# print(g.board)
-# g.set_piece(pos2, piece2)
-# print(g.board)
+pos1 = Position(1, 1)
+piece1 = GamePiece(PlayerColors.BLACK)
 
-# print(g.board)
-# print('moves:\n')
-# for i in g.moves.keys():
-#     print(f'move: {i} board: {g.moves[i]}')
-# print('\n')
-#
-# g.undo()
-# print(g.board)
-# g.undo()
-# print(g.board)
-# g.undo()
+pos2 = Position(0, 0)
+piece2 = GamePiece(PlayerColors.WHITE)
+
+g.set_piece(pos1, piece1)
+g.set_piece(pos2, piece2)
+
+#UNDO AND IS_VALID_PLACEMENT TESTING
+print(g.board)
+g.undo()
+print(f'\nUndo #1: {g.board}')
+g.undo()
+print(g.board)
 
 
-#
+print(g.is_valid_placement(pos1, piece1))
+#END OF UNDO AND IS_VALID_PLACEMENT TESTING
+
+
+# g.undo() #THIS LINE will raise UndoException if uncommented
+
+
 # print(g.piece_at(pos1))
 # print(g.piece_at(pos2))
 # print('=========')
