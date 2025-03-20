@@ -1,7 +1,13 @@
 #Ksenija 03/14
 #Wrote the constructor for GoModel and the appropriate properties
+#Ksenija 03/17
+#Wrote out methods set_piece, piece_at, game_over, pass_turn
+#Ksenija 03/18
+#Further work on GoModel
 #Caleb 03/18
-#worked on is_valid_placement checkin if placement reverts to the previous board position and undo method
+#worked on is_valid_placement checking if placement reverts to the previous board position and undo method
+#Ksenija 03/19
+#Fixed piece_at and pass_turn
 #Caleb 03/19
 #worked on undo() and is_valid_placement. while working on those had to change somethings in the constructor and set_piece
 import copy
@@ -32,8 +38,10 @@ class GoModel:
         self.__nrows = rows
         self.__ncols = cols
         self.__board = []
-        self.player1 = GamePlayer(PlayerColors.BLACK)
-        self.player2 = GamePlayer(PlayerColors.WHITE)
+        self.__player1 = GamePlayer(PlayerColors.BLACK)
+        self.__player2 = GamePlayer(PlayerColors.WHITE)
+        #added this for game_over
+        self.consecutive_pass = 0
         for x in range(rows):
             self.__board.append([])
             for _ in range(cols):
@@ -89,10 +97,15 @@ class GoModel:
         print(f"Getting piece at: ({pos.row}, {pos.col})")
         return self.__board[pos.row][pos.col]
 
+    #should be working, but we need is_valid_placement to work first
     def set_piece(self, pos, piece = None):
         """
         Sets the piece's position on the board.
         """
+        if not isinstance(piece, GamePiece):
+            raise TypeError
+        if not isinstance(pos, Position):
+            raise TypeError
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise ValueError('Out of bounds.')
         if self.is_valid_placement(pos, piece):
@@ -100,7 +113,9 @@ class GoModel:
             self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
             # self.previous_board = self.moves.pop(self.move_num)
             self.move_num += 1 #updates the number of moves done
-        # print(f"Setting piece at ({pos.row}, {pos.col})")
+            self.consecutive_pass = 0
+
+            # print(f"Setting piece at ({pos.row}, {pos.col})")
 
 
     def set_next_player(self):
@@ -109,15 +124,16 @@ class GoModel:
         """
         #two attributes
         #if one, do the other
-        if self.__current_player == self.player1:
-            self.__current_player = self.player2
+        if self.__current_player.player_color == self.__player1.player_color:
+            self.__current_player = self.__player2
         #same
-        elif self.__current_player == self.player2:
-            self.__current_player = self.player1
-        print('This is current player set_next', self.__current_player)
-        print('Printing player1', self.player1)
-        print('============')
-        print('Printing player2', self.player2)
+        elif self.__current_player.player_color == self.__player2.player_color:
+            self.__current_player = self.__player1
+        # print('This is current player set_next', self.__current_player)
+        # print('Printing player1', self.__player1)
+        # print('============')
+        # print('Printing player2', self.__player2)
+        # print(id(self.__current_player), id(self.__player1), id(self.__player2))
 
         # else:
         #     self.__current_player = GamePlayer(PlayerColors.BLACK)
@@ -126,22 +142,31 @@ class GoModel:
         # self.__current_player = player1
         # opponent_player = player2
 
-
+    #working
     def pass_turn(self):
         """
         Skips the player's turn and updates the player's skip_count.
         """
         self.set_next_player()
         self.__current_player.skip_count += 1
+        self.consecutive_pass += 1
         print('This is current player, method pass_turn',self.__current_player)
 
+    #should be working, but we need is_valid_placement to work first
     def is_game_over(self):
         """
         Returns True if two consecutive skips are made.
         """
-        if self.__current_player.skip_count >= 2:
+
+        if self.consecutive_pass == 2:
             return True
-        return False
+        else:
+            return False
+        # else:
+        #     self.pass_count = 0
+        # if self.__current_player.skip_count >= 2:
+        #     return True
+        # return False
 
     #DOESN'T WORK yet
     def is_valid_placement(self, pos, piece):
@@ -210,17 +235,19 @@ class GoModel:
 # print(valid)  # Either True or False based on pos
 # print(go.message)  # Prints message
 go = GoModel()  # Assuming Game is the class with the methods
-go.pass_turn()  # Player 1 skips
-print(go.current_player)  # Should print WHITE (next player)
-
-go.pass_turn()  # Player 2 skips
-print(go.current_player)  # Should print BLACK (next player)
+go.pass_turn()
+go.pass_turn()# Player 1 skips
+# print(go.is_game_over())  # Should print WHITE (next player)
+#
+# go.pass_turn()  # Player 2 skips
+# print(go.current_player)  # Should print BLACK (next player)
 
 # Check if game is over
 if go.is_game_over():
     print("Game Over!")  # Should print over after two skips
 else:
     print("Game continues.")
+
 #
 #
 # g = GoModel()
