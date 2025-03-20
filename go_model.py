@@ -85,7 +85,7 @@ class GoModel:
         if not isinstance(pos, Position):
             raise TypeError
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
-            raise IndexError ('Out of bounds.')
+            raise ValueError('Out of bounds.')
         print(f"Getting piece at: ({pos.row}, {pos.col})")
         return self.__board[pos.row][pos.col]
 
@@ -94,7 +94,7 @@ class GoModel:
         Sets the piece's position on the board.
         """
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
-            raise IndexError ('Out of bounds.')
+            raise ValueError('Out of bounds.')
         if self.is_valid_placement(pos, piece):
             self.__board[pos.row][pos.col] = piece
             self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
@@ -114,6 +114,11 @@ class GoModel:
         #same
         elif self.__current_player == self.player2:
             self.__current_player = self.player1
+        print('This is current player set_next', self.__current_player)
+        print('Printing player1', self.player1)
+        print('============')
+        print('Printing player2', self.player2)
+
         # else:
         #     self.__current_player = GamePlayer(PlayerColors.BLACK)
         # player1 = GamePlayer(PlayerColors.BLACK)
@@ -128,6 +133,7 @@ class GoModel:
         """
         self.set_next_player()
         self.__current_player.skip_count += 1
+        print('This is current player, method pass_turn',self.__current_player)
 
     def is_game_over(self):
         """
@@ -215,29 +221,29 @@ if go.is_game_over():
     print("Game Over!")  # Should print over after two skips
 else:
     print("Game continues.")
-
-
-g = GoModel()
-# print(g.current_player)
-# print(f'\ndefault moves:{g.moves} \n')
-pos1 = Position(1, 1)
-piece1 = GamePiece(PlayerColors.BLACK)
-
-pos2 = Position(0, 0)
-piece2 = GamePiece(PlayerColors.WHITE)
-
-g.set_piece(pos1, piece1)
-g.set_piece(pos2, piece2)
-
-#UNDO AND IS_VALID_PLACEMENT TESTING
-print(g.board)
-g.undo()
-print(f'\nUndo #1: {g.board}')
-g.undo()
-print(g.board)
-
-
-print(g.is_valid_placement(pos1, piece1))
+#
+#
+# g = GoModel()
+# # print(g.current_player)
+# # print(f'\ndefault moves:{g.moves} \n')
+# pos1 = Position(1, 1)
+# piece1 = GamePiece(PlayerColors.BLACK)
+#
+# pos2 = Position(0, 0)
+# piece2 = GamePiece(PlayerColors.WHITE)
+#
+# g.set_piece(pos1, piece1)
+# g.set_piece(pos2, piece2)
+#
+# #UNDO AND IS_VALID_PLACEMENT TESTING
+# print(g.board)
+# g.undo()
+# print(f'\nUndo #1: {g.board}')
+# g.undo()
+# print(g.board)
+#
+#
+# print(g.is_valid_placement(pos1, piece1))
 #END OF UNDO AND IS_VALID_PLACEMENT TESTING
 
 
