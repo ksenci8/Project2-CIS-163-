@@ -208,24 +208,41 @@ class GoModel:
             bucket = []
             potential_count = 0
             possible_opponents = []
+            not_surrounded_pieces = []
             for row in range(len(self.board)-1):
                 for col in range(len(self.board[row])-1):
                     if self.board[row][col] != None and self.board[row][col] == color:
                         bucket.append([row, col])
                         potential_count += 1
-            for i in range(len(bucket)): #I know this is weird but the code was being weird
+            for i in bucket: #I know this is weird but the code was being weird
                 # with just interating with bucket so I changed it to len(bucket)
-                r = bucket[i-1][0]
-                c = bucket[i-1][1]
+                r = i[0]
+                c = i[1]
+                # r = bucket[i-1][0]
+                # c = bucket[i-1][1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
                 for adj in adjacent:
                     if adj[0] < 0 or adj[1] < 0:
                         pass
                     else:
                         if self.board[adj[0]][adj[1]] == color:
-                            bucket.append([adj[0], adj[1]])
-                        if self.board[adj[0]][adj[1]] != color:
+                            if [adj[0], adj[1]] not in bucket:
+                                bucket.append([adj[0], adj[1]])
+                        if self.board[adj[0]][adj[1]] is None:
+                            if [r, c] not in not_surrounded_pieces:
+                                not_surrounded_pieces.append([r, c])
+                                potential_count -= 1
+                        elif self.board[adj[0]][adj[1]] != color:
                             possible_opponents.append(adj)
+            for piece in not_surrounded_pieces:
+                r = piece[0]
+                c = piece[1]
+                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
+                bucket.remove(piece) #removes from bucket
+                #then needs to remove the neighbors of this piece
+                for i in adjacent:
+                    if i in possible_opponents:
+                        possible_opponents.remove(i)
             for i in possible_opponents:
                 if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] == color:
                     return 0 #gets out of the method if they aren't surrounded
@@ -234,9 +251,9 @@ class GoModel:
                 self.cant_play.append(i)
             return potential_count
 
-        self.__player1.capture_count += bucket_check(GamePiece(PlayerColors.WHITE))
+        self.__player1.capture_count = self.__player2.capture_count + bucket_check(GamePiece(PlayerColors.WHITE))
 
-        self.__player2.capture_count += bucket_check(GamePiece(PlayerColors.BLACK))
+        self.__player2.capture_count = self.__player2.capture_count + bucket_check(GamePiece(PlayerColors.BLACK))
         print(self.__player1.capture_count)
         print(self.__player2.capture_count)
         print(self.board)
@@ -273,14 +290,14 @@ g = GoModel()
 piece1 = GamePiece(PlayerColors.WHITE)
 piece2 = GamePiece(PlayerColors.BLACK)
 pos1 = Position(2,2)
-pos4 = Position(2,3)
+pos2 = Position(2,3)
 pos3 = Position(3,2)
-pos6 = Position(3,3)
+pos4 = Position(3,3)
 
 g.set_piece(pos1, piece1)
-g.set_piece(pos4, piece1)
+g.set_piece(pos2, piece1)
 g.set_piece(pos3, piece1)
-g.set_piece(pos6, piece1)
+g.set_piece(pos4, piece1)
 
 black1 = Position(1,2)
 black2 = Position(1,3)
@@ -302,7 +319,9 @@ g.set_piece(black5, piece2)
 g.set_piece(black6, piece2)
 g.set_piece(black7, piece2)
 g.set_piece(black8, piece2)
-#g.set_piece(pos5, piece2)
+
+test = Position(0,0)
+g.set_piece(test, piece1)
 
 for i in g.board:
     print(i)
