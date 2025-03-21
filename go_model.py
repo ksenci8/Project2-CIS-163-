@@ -209,20 +209,20 @@ class GoModel:
             potential_count = 0
             possible_opponents = []
             not_surrounded_pieces = []
-            for row in range(len(self.board)-1):
-                for col in range(len(self.board[row])-1):
+            needs_recheck = []
+            for row in range(len(self.board)):
+                for col in range(len(self.board[row])):
                     if self.board[row][col] != None and self.board[row][col] == color:
                         bucket.append([row, col])
                         potential_count += 1
-            for i in bucket: #I know this is weird but the code was being weird
-                # with just interating with bucket so I changed it to len(bucket)
+            for i in bucket:
                 r = i[0]
                 c = i[1]
                 # r = bucket[i-1][0]
                 # c = bucket[i-1][1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
                 for adj in adjacent:
-                    if adj[0] < 0 or adj[1] < 0:
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
                         pass
                     else:
                         if self.board[adj[0]][adj[1]] == color:
@@ -235,14 +235,28 @@ class GoModel:
                         elif self.board[adj[0]][adj[1]] != color:
                             possible_opponents.append(adj)
             for piece in not_surrounded_pieces:
+                bucket.remove(piece) #removes from bucket
+            for piece in not_surrounded_pieces:
                 r = piece[0]
                 c = piece[1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-                bucket.remove(piece) #removes from bucket
                 #then needs to remove the neighbors of this piece
+                for i in adjacent:
+                    if i in bucket:
+                        return 0
+                        # needs_recheck.append(piece)
+                        #appends any piece that is not surrounded and connected to main blob
                 for i in adjacent:
                     if i in possible_opponents:
                         possible_opponents.remove(i)
+                # for i in adjacent:
+                #     if i in possible_opponents and not dont_remove_bc_connects:
+                #         possible_opponents.remove(i)
+                #     elif dont_remove_bc_connects:
+                #         if i
+
+
+            print(f'\nopponents: {possible_opponents}\n')
             for i in possible_opponents:
                 if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] == color:
                     return 0 #gets out of the method if they aren't surrounded
@@ -251,7 +265,7 @@ class GoModel:
                 self.cant_play.append(i)
             return potential_count
 
-        self.__player1.capture_count = self.__player2.capture_count + bucket_check(GamePiece(PlayerColors.WHITE))
+        self.__player1.capture_count = self.__player1.capture_count + bucket_check(GamePiece(PlayerColors.WHITE))
 
         self.__player2.capture_count = self.__player2.capture_count + bucket_check(GamePiece(PlayerColors.BLACK))
         print(self.__player1.capture_count)
@@ -318,13 +332,16 @@ g.set_piece(black4, piece2)
 g.set_piece(black5, piece2)
 g.set_piece(black6, piece2)
 g.set_piece(black7, piece2)
-g.set_piece(black8, piece2)
+g.set_piece(black8, piece1)
 
-test = Position(0,0)
+test = Position(5,5)
 g.set_piece(test, piece1)
+
 
 for i in g.board:
     print(i)
 g.capture()
 for i in g.board:
     print(i)
+
+g.capture()
