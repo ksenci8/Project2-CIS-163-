@@ -232,7 +232,7 @@ class TestGoStep4(unittest.TestCase):
         self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.BLACK))
         initial_count = self.game.player1.capture_count
         self.game.capture()
-        self.assertEqual(self.game.player1.capture_count, initial_count + 0) #black should capture, might be too early to work
+        self.assertEqual(self.game.player1.capture_count, initial_count + 0) # 1 black should capture, might be too early to work
 
     def test_capture_count_group(self):
         #White group surrounded by black group
