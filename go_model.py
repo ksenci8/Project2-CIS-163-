@@ -204,7 +204,6 @@ class GoModel:
         #     return False
 
     def capture(self):
-
         def bucket_check(color):
             bucket = []
             potential_count = 0
@@ -214,7 +213,8 @@ class GoModel:
                     if self.board[row][col] != None and self.board[row][col] == color:
                         bucket.append([row, col])
                         potential_count += 1
-            for i in range(len(bucket)):
+            for i in range(len(bucket)): #I know this is weird but the code was being weird
+                # with just interating with bucket so I changed it to len(bucket)
                 r = bucket[i-1][0]
                 c = bucket[i-1][1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
@@ -223,7 +223,7 @@ class GoModel:
                         pass
                     else:
                         if self.board[adj[0]][adj[1]] == color:
-                            bucket.append(bucket)
+                            bucket.append([adj[0], adj[1]])
                         if self.board[adj[0]][adj[1]] != color:
                             possible_opponents.append(adj)
             for i in possible_opponents:
@@ -240,6 +240,7 @@ class GoModel:
         print(self.__player1.capture_count)
         print(self.__player2.capture_count)
         print(self.board)
+
 
 
     def undo(self):
@@ -270,27 +271,41 @@ class GoModel:
 
 g = GoModel()
 piece1 = GamePiece(PlayerColors.WHITE)
-piece2 = GamePiece(PlayerColors.WHITE)
-piece3 = GamePiece(PlayerColors.WHITE)
-piece4 = GamePiece(PlayerColors.WHITE)
+piece2 = GamePiece(PlayerColors.BLACK)
 pos1 = Position(2,2)
-pos2 = Position(1,2)
-pos3 = Position(3,2)
 pos4 = Position(2,3)
-pos5 = Position(2,1)
-piece5 = GamePiece(PlayerColors.BLACK)
+pos3 = Position(3,2)
+pos6 = Position(3,3)
+
 g.set_piece(pos1, piece1)
-g.set_piece(pos2, piece5)
-g.set_piece(pos3, piece5)
-g.set_piece(pos4, piece5)
-g.set_piece(pos5, piece5)
+g.set_piece(pos4, piece1)
+g.set_piece(pos3, piece1)
+g.set_piece(pos6, piece1)
 
-pos6 = Position(0,2)
-pos7 = Position(1,3)
-pos8 = Position(0,2)
+black1 = Position(1,2)
+black2 = Position(1,3)
 
+black3 = Position(2,4)
+black4 = Position(3,4)
 
-print(g.board)
+black5 = Position(4,3)
+black6 = Position(4,2)
+
+black7 = Position(3,1)
+black8 = Position(2,1)
+
+g.set_piece(black1, piece2)
+g.set_piece(black2, piece2)
+g.set_piece(black3, piece2)
+g.set_piece(black4, piece2)
+g.set_piece(black5, piece2)
+g.set_piece(black6, piece2)
+g.set_piece(black7, piece2)
+g.set_piece(black8, piece2)
+#g.set_piece(pos5, piece2)
+
+for i in g.board:
+    print(i)
 g.capture()
-g.set_piece(pos1, piece1)
-print(g.board)
+for i in g.board:
+    print(i)
