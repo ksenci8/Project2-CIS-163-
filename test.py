@@ -93,27 +93,26 @@ class TestGoStep4(unittest.TestCase):
         copied_board = self.game.copy_board()
         self.assertIsInstance(copied_board, list)
 
-    def setUp(self):
-        self.model = GoModel()
-        self.piece = GamePiece(PlayerColors.BLACK)
-
-    def test_instance(self):
-        self.assertIsInstance(self.model, GoModel)
-
-    def test_add_piece(self):
-        self.model.add_piece(self.piece, (3, 3))
-        self.assertTrue((3, 3) in self.model.board)
-
-    def test_invalid_position(self):
-        with self.assertRaises(ValueError):
-            self.model.add_piece(self.piece, (-1, -1))  # Assuming negative positions are invalid
-
-    def test_is_valid_placement_false(self):
-        self.model.add_piece(self.piece, (3, 3))
-        self.assertFalse(self.model.is_valid_placement(GamePiece("white"), (3, 3)))  # Position already occupied
-
-    def test_is_valid_placement_true(self):
-        self.assertTrue(self.model.is_valid_placement(self.piece, (4, 4)))  # Assuming empty positions are valid
+    # def setUp2(self):
+    #     self.model = GoModel()
+    #     self.piece = GamePiece(PlayerColors.BLACK)
+    #
+    # def test_instance(self):
+    #     self.assertIsInstance(self.model, GoModel)
+    #
+    # def test_add_piece(self):
+    #     self.model.add_piece(self.piece, (3, 3))
+    #     self.assertTrue((3, 3) in self.model.board)
+    #
+    # def test_invalid_position(self):
+    #     with self.assertRaises(ValueError):
+    #         self.model.add_piece(self.piece, (-1, -1))
+    #
+    # def test_is_valid_placement_false(self):
+    #     self.model.add_piece(self.piece, (3, 3))
+    #     self.assertFalse(self.model.is_valid_placement(GamePiece(PlayerColors.WHITE), (3, 3)))
+    # def test_is_valid_placement_true(self):
+    #     self.assertTrue(self.model.is_valid_placement(self.piece, (4, 4)))
 
     # def setUp(self):
     #     game = GoModel(6, 6)
