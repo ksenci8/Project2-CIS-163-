@@ -57,6 +57,8 @@ class GoModel:
         # previous board's default value needs to have the index but needs to have something in it that would never appear
         self.previous_board = [['value that would never appear']]
 
+        self.cant_play = []
+
     # Properties
     @property
     def nrows(self):
@@ -102,10 +104,10 @@ class GoModel:
         """
         Sets the piece's position on the board.
         """
-        if not isinstance(piece, GamePiece):
-            raise TypeError
-        if not isinstance(pos, Position):
-            raise TypeError
+        # if not isinstance(piece, GamePiece):
+        #     raise TypeError
+        # if not isinstance(pos, Position):
+        #     raise TypeError
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise ValueError('Out of bounds.')
         if self.is_valid_placement(pos, piece):
@@ -186,17 +188,58 @@ class GoModel:
         temp_board[pos.row][pos.col] = piece
 
         # uncomment line under if you want to see the 2 values being compared
-        print(f'\n\nprevious:{self.previous_board}\nwill be:{temp_board}\n\n')
+        # print(f'\n\nprevious:{self.previous_board}\nwill be:{temp_board}\n\n')
+
+        if [pos.row, pos.col] in self.cant_play:
+            return False
 
         #compares all the elements in the previous board verifying that
-        for row in range(len(temp_board)):
-            for col in range(len(temp_board)):
-                if temp_board[row][col] != self.previous_board[row][col]:
-                    return True
+        for i in self.moves.values():
+            for row in range(len(i)):
+                for col in range(len(i)):
+                    if i[row][col] != temp_board[row][col]:
+                        return True
         return False
         # if temp_board == self.previous_board:
         #     return False
 
+    def capture(self):
+
+        def bucket_check(color):
+            bucket = []
+            potential_count = 0
+            possible_opponents = []
+            for row in range(len(self.board)-1):
+                for col in range(len(self.board[row])-1):
+                    if self.board[row][col] != None and self.board[row][col] == color:
+                        bucket.append([row, col])
+                        potential_count += 1
+            for i in range(len(bucket)):
+                r = bucket[i-1][0]
+                c = bucket[i-1][1]
+                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
+                for adj in adjacent:
+                    if adj[0] < 0 or adj[1] < 0:
+                        pass
+                    else:
+                        if self.board[adj[0]][adj[1]] == color:
+                            bucket.append(bucket)
+                        if self.board[adj[0]][adj[1]] != color:
+                            possible_opponents.append(adj)
+            for i in possible_opponents:
+                if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] == color:
+                    return 0 #gets out of the method if they aren't surrounded
+            for i in bucket:
+                self.board[i[0]][i[1]] = None
+                self.cant_play.append(i)
+            return potential_count
+
+        self.__player1.capture_count += bucket_check(GamePiece(PlayerColors.WHITE))
+
+        self.__player2.capture_count += bucket_check(GamePiece(PlayerColors.BLACK))
+        print(self.__player1.capture_count)
+        print(self.__player2.capture_count)
+        print(self.board)
 
 
     def undo(self):
@@ -225,60 +268,29 @@ class GoModel:
         return b
 
 
-#Message works and the checks work
-# go = GoModel()
-# pos = Position(1, 1)
-# piece = GamePiece(PlayerColors.BLACK)
-#
-#
-# valid = go.is_valid_placement(pos, piece)
-# print(valid)  # Either True or False based on pos
-# print(go.message)  # Prints message
-go = GoModel()  # Assuming Game is the class with the methods
-go.pass_turn()
-go.pass_turn()# Player 1 skips
-# print(go.is_game_over())  # Should print WHITE (next player)
-#
-# go.pass_turn()  # Player 2 skips
-# print(go.current_player)  # Should print BLACK (next player)
+g = GoModel()
+piece1 = GamePiece(PlayerColors.WHITE)
+piece2 = GamePiece(PlayerColors.WHITE)
+piece3 = GamePiece(PlayerColors.WHITE)
+piece4 = GamePiece(PlayerColors.WHITE)
+pos1 = Position(2,2)
+pos2 = Position(1,2)
+pos3 = Position(3,2)
+pos4 = Position(2,3)
+pos5 = Position(2,1)
+piece5 = GamePiece(PlayerColors.BLACK)
+g.set_piece(pos1, piece1)
+g.set_piece(pos2, piece5)
+g.set_piece(pos3, piece5)
+g.set_piece(pos4, piece5)
+g.set_piece(pos5, piece5)
 
-# Check if game is over
-if go.is_game_over():
-    print("Game Over!")  # Should print over after two skips
-else:
-    print("Game continues.")
-
-#
-#
-# g = GoModel()
-# # print(g.current_player)
-# # print(f'\ndefault moves:{g.moves} \n')
-# pos1 = Position(1, 1)
-# piece1 = GamePiece(PlayerColors.BLACK)
-#
-# pos2 = Position(0, 0)
-# piece2 = GamePiece(PlayerColors.WHITE)
-#
-# g.set_piece(pos1, piece1)
-# g.set_piece(pos2, piece2)
-#
-# #UNDO AND IS_VALID_PLACEMENT TESTING
-# print(g.board)
-# g.undo()
-# print(f'\nUndo #1: {g.board}')
-# g.undo()
-# print(g.board)
-#
-#
-# print(g.is_valid_placement(pos1, piece1))
-#END OF UNDO AND IS_VALID_PLACEMENT TESTING
+pos6 = Position(0,2)
+pos7 = Position(1,3)
+pos8 = Position(0,2)
 
 
-# g.undo() #THIS LINE will raise UndoException if uncommented
-
-
-# print(g.piece_at(pos1))
-# print(g.piece_at(pos2))
-# print('=========')
-# print(g.piece_at(Position(2, 2)))  #print None (empty position)
-# print(g.board)
+print(g.board)
+g.capture()
+g.set_piece(pos1, piece1)
+print(g.board)
