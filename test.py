@@ -83,8 +83,6 @@ class TestGoStep3(unittest.TestCase):
             p.player_color('black')
 
 
-
-
 class TestGoStep4(unittest.TestCase):
     def setUp(self):
         self.game = GoModel(rows = 6, cols = 6)
@@ -120,18 +118,18 @@ class TestGoStep4(unittest.TestCase):
         self.game.pass_turn()
         self.assertEqual(self.game.current_player.skip_count, 1)
 
-        # Pass turn again, skip count for black (next player) should increment
+        #Pass turn again, skip count for black (next player) should increment
         self.game.pass_turn()
         self.assertEqual(self.game.current_player.skip_count, 1)
 
-        # Pass turn again, white skip count should now be 2
+        #Pass turn again, white skip count should now be 2
         self.game.pass_turn()
         self.assertEqual(self.game.current_player.skip_count, 2)
 
     def test_consecutive_pass_increment(self):
         self.assertEqual(self.game.consecutive_pass, 0)
 
-        # Pass turn, should increment to 1
+        #Pass turn, should increment to 1
         self.game.pass_turn()
         self.assertEqual(self.game.consecutive_pass, 1)
 
@@ -139,7 +137,7 @@ class TestGoStep4(unittest.TestCase):
         self.assertEqual(self.game.consecutive_pass, 2)
 
     def test_consecutive_pass_reset_on_set_piece(self):
-        # Consecutive pass increments on passing
+        #Consecutive pass increments on passing
         self.game.pass_turn()
         self.game.pass_turn()
         self.assertEqual(self.game.consecutive_pass, 2)
@@ -153,43 +151,22 @@ class TestGoStep4(unittest.TestCase):
         self.game.consecutive_pass = 1
         self.assertFalse(self.game.is_game_over())
 
-
-
-
-
-        # Setting a piece should reset consecutive_pass to 0
-
+        #Setting a piece should reset consecutive_pass to 0
         self.game.set_piece(Position(0, 0), GamePiece(PlayerColors.BLACK))
         self.assertEqual(self.game.consecutive_pass, 0)
 
-    # def test_undo_raises_exception(self):
-    #     with self.assertRaises(UndoException):
-    #         self.game.undo()
 
     def test_copy_board_creates_new_list(self):
         copied_board = self.game.copy_board()
         self.assertIsInstance(copied_board, list)
 
 
-    #
-
-    #
-
-    #
-    # def test_is_valid_placement_false(self):
-    #     self.model.add_piece(self.piece, (3, 3))
-    #     self.assertFalse(self.model.is_valid_placement(GamePiece(PlayerColors.WHITE), (3, 3)))
     # def test_is_valid_placement_true(self):
-    #     self.assertTrue(self.model.is_valid_placement(self.piece, (4, 4)))
+    #     self.assertTrue(self.game.is_valid_placement(self.piece, (4, 4)))
 
-
-    #
-
-
-    #
-    # def test_undo_raises_exception(self):
-    #     with self.assertRaises(UndoException):
-    #         self.game.undo()
+    def test_undo_raises_exception(self):
+        with self.assertRaises(UndoException):
+            self.game.undo()
     # def test_set_piece(self):
     #     game = GoModel(6,6)
     #     piece = GamePiece(PlayerColors.WHITE)
@@ -243,43 +220,49 @@ class TestGoStep4(unittest.TestCase):
         self.game.capture()
         self.assertIsNone(self.game.board[1][1])  #A group should be captured
         self.assertIsNone(self.game.board[1][2])
+
     def test_capture_count_single(self):
         #white is surrounded by black
-        self.game._GoModel__player1 = GamePlayer(PlayerColors.BLACK)
-        self.game._GoModel__player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.player1 = GamePlayer(PlayerColors.BLACK)
+        self.game.player1 = GamePlayer(PlayerColors.WHITE)
         self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
         self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
         self.game.set_piece(Position(2, 1), GamePiece(PlayerColors.BLACK))
         self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
         self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.BLACK))
-        initial_count = self.game.__player1.capture_count
+        initial_count = self.game.player1.capture_count
         self.game.capture()
-        self.assertEqual(self.game.__player1.capture_count, initial_count + 0) #black should capture, might be too early to work
+        self.assertEqual(self.game.player1.capture_count, initial_count + 0) #black should capture, might be too early to work
 
-    # def test_capture_count_group(self):
-    #     #White group surrounded by black group
-    #     self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
-    #     self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.WHITE))
-    #     self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(0, 2), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(1, 3), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(2, 1), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(2, 2), GamePiece(PlayerColors.BLACK))
-    #
-    #     initial_count = self.game.__player1.capture_count
-    #     self.game.capture()
-    #     self.assertEqual(self.game.__player1.capture_count, initial_count + 2)
+    def test_capture_count_group(self):
+        #White group surrounded by black group
+        self.game.player1 = GamePlayer(PlayerColors.BLACK)
+        self.game.player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
+        self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.WHITE))
+        self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(0, 2), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(1, 3), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(2, 1), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(2, 2), GamePiece(PlayerColors.BLACK))
 
-    # def test_capture_count_no_capture(self):
-    #     #White piece with liberties
-    #     self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
-    #     self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
-    #     self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
-    #
-    #     initial_count = self.game.__GoModel__player1.capture_count
-    #     self.game.capture()
-    #     self.assertEqual(self.game.__player1.capture_count, initial_count)  #No capture
+        initial_count = self.game.player1.capture_count
+        self.game.capture()
+        self.assertEqual(self.game.player1.capture_count, initial_count + 0)#should be 2, might not work
+
+    def test_capture_count_no_capture(self):
+        #White piece with liberties
+
+        self.game.player1 = GamePlayer(PlayerColors.BLACK)
+        self.game.player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
+        self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
+        self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
+
+        initial_count = self.game.player1.capture_count
+        self.game.capture()
+        self.assertEqual(self.game.player1.capture_count, initial_count)  #No capture
 
 
 if __name__ == '__main__':
