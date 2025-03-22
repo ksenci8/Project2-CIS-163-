@@ -336,62 +336,6 @@ class GoModel:
                     else:
                         open_spots.remove([r, c]) #This may cause an error as your removing something from a list while iteration through them
 
-        # bucket = []
-        # potential_count = 0
-        # possible_opponents = []
-        # not_surrounded_pieces = []
-        # for row in range(len(self.board)):
-        #     for col in range(len(self.board[row])):
-        #         if self.board[row][col] == None:
-        #             bucket.append([row, col])
-        #             potential_count += 1
-        # for i in bucket:
-        #     r = i[0]
-        #     c = i[1]
-        #     adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-        #     for adj in adjacent:
-        #         if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
-        #             pass
-        #         else:
-        #             if self.board[adj[0]][adj[1]] == None:
-        #                 if [adj[0], adj[1]] not in bucket:
-        #                     bucket.append([adj[0], adj[1]])
-        #             elif self.board[adj[0]][adj[1]] != color:
-        #                 if [r, c] not in not_surrounded_pieces:
-        #                     not_surrounded_pieces.append([r, c])
-        #                     potential_count -= 1
-        #             elif self.board[adj[0]][adj[1]] == color:
-        #                 possible_opponents.append(adj)
-        # for piece in not_surrounded_pieces:
-        #     bucket.remove(piece) #removes from bucket
-        # for piece in not_surrounded_pieces:
-        #     r = piece[0]
-        #     c = piece[1]
-        #     adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-        #         #then needs to remove the neighbors of this piece
-        #     for i in adjacent:
-        #         if i in bucket:
-        #             return 0
-        #                 # needs_recheck.append(piece)
-        #                 #appends any piece that is not surrounded and connected to main blob
-        #     for i in adjacent:
-        #         if i in possible_opponents:
-        #             possible_opponents.remove(i)
-        #         # for i in adjacent:
-        #         #     if i in possible_opponents and not dont_remove_bc_connects:
-        #         #         possible_opponents.remove(i)
-        #         #     elif dont_remove_bc_connects:
-        #         #         if i
-        #
-        #
-        #     # print(f'\nopponents: {possible_opponents}\n')
-        # for i in possible_opponents:
-        #     if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] != color:
-        #         return 0 #gets out of the method if they aren't surrounded
-        # for i in bucket:
-        #     self.board[i[0]][i[1]] = None
-        #     self.cant_play.append(i)
-        # return potential_count
 
 
 
