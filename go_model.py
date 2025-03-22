@@ -218,8 +218,6 @@ class GoModel:
             for i in bucket:
                 r = i[0]
                 c = i[1]
-                # r = bucket[i-1][0]
-                # c = bucket[i-1][1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
                 for adj in adjacent:
                     if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
@@ -272,7 +270,8 @@ class GoModel:
         print(self.__player2.capture_count)
         print(self.board)
 
-
+    def calculate_score(self):
+        pass
 
     def undo(self):
         if not self.moves or self.move_num == 1: #raises UndoException when out of undos or when its the very first turn
@@ -298,6 +297,33 @@ class GoModel:
                 updated_row.append(square)
             b.append(updated_row)
         return b
+
+    def take_empty(self, color): #seperate from capture() used for when pieces surround an empty space
+        open_spots = []
+        potential_count = 0
+        surround = []
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] is None:
+                    open_spots.append([row, col])
+                    potential_count += 1
+        for i in open_spots:
+            r = i[0]
+            c = i[1]
+            adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
+            for adj in adjacent:
+                if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
+                    pass
+                else:
+                    if self.board[adj[0]][adj[1]] is None:
+                        if self.board[adj[0]][adj[1]] not in open_spots:
+                            open_spots.append([adj[0], adj[1]])
+                    elif self.board[adj[0]][adj[1]] == color:
+                        surround.append([r, c])
+                    else:
+                        open_spots.remove([r, c]) #This may cause an error as your removing something from a list while iteration through them
+                    
+
 
 
 g = GoModel()
