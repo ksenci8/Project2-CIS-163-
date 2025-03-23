@@ -33,6 +33,7 @@ from placeble import Placeble
 class GamePiece(Placeble):
     """
     Represents the game piece, checks valid placement on board, and inherits Placeble class.
+    
     Methods: 
         is_valid_placement(pos, board): Checks that placement is valid if not occupied by opponent pieces.
         __eq__(): Compares two game pieces and returns True if they have the same value.
@@ -40,7 +41,9 @@ class GamePiece(Placeble):
     def __str__(self):
         """
         Returns the color of game piece and serves for debugging purposes.
-        :return:
+
+        Returns:
+            str: shows the color of the gamepiece
         """
         return f'Color: {self.color}'
 
@@ -53,6 +56,9 @@ class GamePiece(Placeble):
         and stores the created adjacent squares (left, right, up, and down) into a list adjacent.
         Lastly, it counts the adjacent squares occupied by the opponent pieces. If all
         are occupied, it returns False (placement invalid), else True (placement is valid).
+
+        Returns:
+            bool: False if invalid placement true if valid placement
         """
         if not super().is_valid_placement(pos, board):
             return False
@@ -99,6 +105,9 @@ class GamePiece(Placeble):
         """
         Compares two instances of GamePiece and returns True if their value
         is same, or returns False if the value is different.
+
+        Returns:
+            bool: Returns true if the colors are equal false if not
         """
         if self.color == other:
            return True

@@ -19,11 +19,56 @@ from position import Position
 import copy
 
 class UndoException(Exception):
+    """
+    Called when there are no moves left to undo.
+
+    Raises:
+    	Undo: If no moves left to undo.
+    """
     pass
 
 class GoModel:
-    #constructor
+    """
+    Represents the model to play the game Go. Implements appropriate methods to check
+    valid placement of piece, playing turns between players, undo a previous move, calculates the score, and
+    ensures game is over if conditions are met (two consecutive passes made by both players).
+
+    Attributes:
+        rows(int) = Represents the board's rows and the default value is 6.
+        cols(int) = Represents the board's rows and the default value is 6.
+    Instance variables:
+        __current_player = Represents the current player (Black starts first).
+         __nrows = Represents the number of rows and takes rows as value.
+        __ncols = Represents the number of columns and takes cols as value.
+        __board = Represents the board of the game.
+        __player1 = Represents the black player and used primarily in set_next_player.
+        __player2 = Represents the white player and used primarily in set_next_player.
+        consecutive_pass = Tracks the number of consecutive passes and used for is_game_over.
+        __message = Displays the message throughout the game.
+        previous_board = Represents the previous board state.
+    Methods:
+        piece_at(pos): Checks the position of the piece.
+        set_piece(pos, piece): Sets the piece at a given position.
+        set_next_player(): Changes from player1 to player2 or vice versa.
+        pass_turn(): Uses set_next_player and passes a turn.
+        is_game_over: Checks if the variable consecutive_pass is equal to 2 and returns True.
+        is_valid_placement(pos, piece): Expands the previous version of this method by checking if placement
+        would result in previous board state.
+        undo(): Undos the most recent move that has not yet been undone.
+        copy_board(): creates a copy of the board with the same GamePiece refernces
+    """
     def __init__(self, rows = 6, cols = 6):
+        """
+        Initializes the GoModel object.
+
+        Args:
+            rows = Number of rows and default value is 6.
+            cols = Number of columns and default value is 6.
+        Raises:
+            TypeError: if rows is not an integer; if columns in not an integer.
+            ValueError: If the value of rows and columns is anything else other than acceptable values.
+            ValueError: If rows and cols aren't the same ammount (if board is a rectangle)
+        """
         acceptable_values = [6, 9, 11, 13, 19]
         if not isinstance(rows, int):
             raise TypeError
@@ -63,26 +108,57 @@ class GoModel:
     # Properties
     @property
     def nrows(self):
+        """
+        Property get method for nrows.
+
+        Returns:
+            Int: number of rows
+        """
         return self.__nrows
     @property
     def ncols(self):
+        '''
+        Property get method for ncols.
+
+        Returns:
+            Int: number of collumns
+        '''
         return self.__ncols
     @property
     def current_player(self):
+        '''
+        Property get method for current_player
+
+        Returns:
+            GamePlayer: The Current player
+        '''
         return self.__current_player
     @property
     def board(self):
+        '''
+        Property get method for board
+
+        Returns:
+            List: returns the Board
+        '''
         return self.__board
-    #I know board.setter is not specified in the project, but I created for usage in undo()
-    # @board.setter
-    # def board(self, board):
-    #     self.__board = board
-    #message getter and setter
     @property
     def message(self):
+        '''
+        Property get method for message
+
+        Returns:
+             str: returns the message
+        '''
         return self.__message
     @message.setter
     def message(self, mes):
+        '''
+        Property setter for message
+
+        Raises:
+             TypeError: if mes is not a str
+        '''
         if not isinstance(mes, str):
             raise TypeError
         self.__message = mes
@@ -91,6 +167,12 @@ class GoModel:
         """
         Returns the piece's position on the board and checks if the position
         is out of bounds.
+
+        Returns:
+            GamePiece: returns the game piece at the specified position
+        Raises:
+            TypeError: if pos is not a Position object
+            ValueError: if specified pos is not within range of the board
         """
         # implemented the check from placeble
         if not isinstance(pos, Position):
@@ -104,11 +186,12 @@ class GoModel:
     def set_piece(self, pos, piece = None):
         """
         Sets the piece's position on the board.
+
+        Raises:
+            ValueError: if specified position is not within bounds
         """
-        # if not isinstance(piece, GamePiece):
-        #     raise TypeError
-        # if not isinstance(pos, Position):
-        #     raise TypeError
+        if not isinstance(pos, Position):
+            raise TypeError
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise ValueError('Out of bounds.')
         if self.is_valid_placement(pos, piece):
@@ -173,6 +256,14 @@ class GoModel:
 
     #DOESN'T WORK yet
     def is_valid_placement(self, pos, piece):
+        '''
+        Uses previous parent class is_valid_placement if returns tru then checks
+        the position is in cant play list, if the position would revert to a previous
+        board.
+
+        Returns:
+            bool: True if the placement is valid false if the placement is not valid
+        '''
         if not piece.is_valid_placement(pos, self.board):
             self.message = ('Invalid Placement: Either not within bounds,\n'
                             'or piece is already surrounded by opponent pieces')
@@ -195,18 +286,28 @@ class GoModel:
             return False
 
         #compares all the elements in the previous board verifying that
-        for i in self.moves.values():
-            for row in range(len(i)):
-                for col in range(len(i)):
-                    if i[row][col] == temp_board[row][col]:
-                        print('\nPrevious board position\n')
-                        return False
-        return True
+        # for i in self.moves.values():
+        for row in range(len(self.previous_board)):
+            for col in range(len(self.previous_board)):
+                if self.previous_board[row][col] != temp_board[row][col]:
+                    return True #will return true for the first option when the 2nd option could have the same board
+        self.message = 'can\'t play would result in previous board state'
+        return False
         # if temp_board == self.previous_board:
         #     return False
 
     def capture(self):
+        '''
+        Runs bucket_check() for the current_player and increments their capture_count by the result
+        '''
         def bucket_check(color):
+            '''
+            Uses a complex string of for loops to detect whether there are pieces being captured
+            if there are it will return the ammount that has been captured if not it will return 0
+
+            Returns:
+                int: returns 0 if there are no peices being captured otherwise returns the ammount being captured
+            '''
             bucket = []
             potential_count = 0
             possible_opponents = []
@@ -326,13 +427,43 @@ class GoModel:
             return potential_count
 
         self.current_player.capture_count += bucket_check(GamePiece(self.current_player.player_color.opponent()))
-        print(f'{self.current_player.player_color}:{self.current_player.capture_count}')
+        #print(f'{self.current_player.player_color}:{self.current_player.capture_count}')
 
 
     def calculate_score(self):
-        pass
+        '''
+        Calculates the score between the 2 players and returns them in a list
+
+        Returns:
+            list: returns score for both players Ex: [Black_score, White_score]
+        '''
+        white = 0
+        black = 0
+        for row in self.board:
+            for place in row:
+                if place == GamePiece(PlayerColors.BLACK):
+                    black += 1
+                elif place == GamePiece(PlayerColors.WHITE):
+                    white += 1
+        if self.current_player == GamePlayer(PlayerColors.BLACK):
+            black += self.current_player.capture_count
+            self.set_next_player()
+            white += self.current_player.capture_count
+            self.set_next_player()
+        elif self.current_player == GamePlayer(PlayerColors.WHITE):
+            white += self.current_player.capture_count
+            self.set_next_player()
+            black += self.current_player.capture_count
+            self.set_next_player()
+        return [black, white]
 
     def undo(self):
+        '''
+        Undoes the most recent made move on the board
+
+        Raises:
+            UndoException: Raised when there is nothing to undo
+        '''
         if not self.moves or self.move_num == 1: #raises UndoException when out of undos or when its the very first turn
             raise UndoException('Nothing to Undo')
 
@@ -343,12 +474,18 @@ class GoModel:
                 self.board[row][col] = self.moves[self.move_num-2][row][col]
 
         self.set_next_player() #switches the player turn to the other.
-        self.previous_board = self.moves.pop(self.move_num-1) #keeping previous hand is purely for the is_valid_placement check.
+        self.previous_board = self.moves[self.move_num-1] #keeping previous hand is purely for the is_valid_placement check.
         # but since its a pop its also for removing it
         self.move_num -= 1 #brings the current move_num down 1
 
     #this way of copying board makes so that the GamePiece references are the same value
     def copy_board(self):
+        '''
+        makes a copy of the board making sure to keep the same gamepiece references
+
+        Returns:
+            List: returns the exact same current value of the board
+        '''
         b = []
         for row in self.board:
             updated_row = []
@@ -357,30 +494,33 @@ class GoModel:
             b.append(updated_row)
         return b
 
-    def take_empty(self, color): #seperate from capture() used for when pieces surround an empty space
-        open_spots = []
-        potential_count = 0
-        surround = []
-        for row in range(len(self.board)):
-            for col in range(len(self.board[row])):
-                if self.board[row][col] is None:
-                    open_spots.append([row, col])
-                    potential_count += 1
-        for i in open_spots:
-            r = i[0]
-            c = i[1]
-            adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
-            for adj in adjacent:
-                if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
-                    pass
-                else:
-                    if self.board[adj[0]][adj[1]] is None:
-                        if self.board[adj[0]][adj[1]] not in open_spots:
-                            open_spots.append([adj[0], adj[1]])
-                    elif self.board[adj[0]][adj[1]] == color:
-                        surround.append([r, c])
-                    else:
-                        open_spots.remove([r, c]) #This may cause an error as your removing something from a list while iteration through them
+    # def take_empty(self, color): #seperate from capture() used for when pieces surround an empty space
+    #     '''
+    #
+    #     '''
+    #     open_spots = []
+    #     potential_count = 0
+    #     surround = []
+    #     for row in range(len(self.board)):
+    #         for col in range(len(self.board[row])):
+    #             if self.board[row][col] is None:
+    #                 open_spots.append([row, col])
+    #                 potential_count += 1
+    #     for i in open_spots:
+    #         r = i[0]
+    #         c = i[1]
+    #         adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
+    #         for adj in adjacent:
+    #             if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
+    #                 pass
+    #             else:
+    #                 if self.board[adj[0]][adj[1]] is None:
+    #                     if self.board[adj[0]][adj[1]] not in open_spots:
+    #                         open_spots.append([adj[0], adj[1]])
+    #                 elif self.board[adj[0]][adj[1]] == color:
+    #                     surround.append([r, c])
+    #                 else:
+    #                     open_spots.remove([r, c]) #This may cause an error as your removing something from a list while iteration through them
 
         # bucket = []
         # potential_count = 0
@@ -443,7 +583,8 @@ class GoModel:
 
 
 
-# g = GoModel()
+g = GoModel()
+g.calculate_score()
 # piece1 = GamePiece(PlayerColors.WHITE)
 # piece2 = GamePiece(PlayerColors.BLACK)
 # pos1 = Position(2,2)
