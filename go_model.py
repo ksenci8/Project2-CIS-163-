@@ -198,20 +198,21 @@ class GoModel:
         for i in self.moves.values():
             for row in range(len(i)):
                 for col in range(len(i)):
-                    if i[row][col] != temp_board[row][col]:
-                        return True
-        return False
+                    if i[row][col] == temp_board[row][col]:
+                        print('\nPrevious board position\n')
+                        return False
+        return True
         # if temp_board == self.previous_board:
         #     return False
 
     def capture(self):
-        print('\n\nentering capture\n\n')
         def bucket_check(color):
             bucket = []
             potential_count = 0
             possible_opponents = []
             not_surrounded_pieces = []
             remove_pieces = []
+            pieces_connected = []
             #checked = []
             #notes all of the cordinates of the pieces of the specified color
             for row in range(len(self.board)):
@@ -227,9 +228,9 @@ class GoModel:
                     if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
                         pass
                     else:
-                        # if self.board[adj[0]][adj[1]] == color: #adds any piece that is the same color and not already in the bucket
-                        #     if [adj[0], adj[1]] not in bucket:
-                        #         bucket.append([adj[0], adj[1]])
+                        if self.board[adj[0]][adj[1]] == color: #adds any piece that is the same color and not already in the bucket
+                            if [adj[0], adj[1]] not in bucket:
+                                bucket.append([adj[0], adj[1]])
                         if self.board[adj[0]][adj[1]] is None: #if a piece has None as an adjacent it's not surrounded so it gets added to not_surrounded_pieces
                             if [r, c] not in not_surrounded_pieces:
                                 not_surrounded_pieces.append([r, c])
@@ -240,8 +241,7 @@ class GoModel:
                 for i in bucket: #just a for loop here to verify that I remove it all even if there are duplicates
                     if i == piece:
                         bucket.remove(piece) #removes from bucket
-
-            for piece in not_surrounded_pieces: #now we cycle through them again and if the not_surrounded_pieces is connected
+            for piece in not_surrounded_pieces: #now we cycle through them again and if the not surrounded it connected
                 # to one of the pieces in bucket it removes that piece from bucket as it can't be surrounded if its connected
                 #to a piece that has a None as a neighbor
                 r = piece[0]
@@ -249,37 +249,67 @@ class GoModel:
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
                 #then needs to remove the neighbors of this piece
                 for i in adjacent:
-                    if i in bucket:
-                        bucket.remove([i[0], i[1]]) #Was failing here
-                        potential_count -= 1
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
+                        pass
+                    else:
+                        if i in bucket:
+                            bucket.remove([i[0], i[1]]) #Was failing here
+                            potential_count -= 1
 
                 for i in adjacent: #removes any possible opponents that is near not_surrounded
-                    if i in possible_opponents:
-                        possible_opponents.remove(i)
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
+                        pass
+                    else:
+                        if i in possible_opponents:
+                            possible_opponents.remove(i)
+
             for i in bucket: #This for loop explores all the neighbors that are the same color. if any of them are connected to
                 r = i[0]
                 c = i[1]
                 adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
                 for adj in adjacent:
-                    if self.board[adj[0]][adj[1]] == color:
-                        if adj not in bucket:
-                            bucket.append(adj)
-                            remove_pieces.append(adj)
-                    if self.board[adj[0]][adj[1]] is None:
-                        return 0
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
+                        pass
+                    else:
+                        if self.board[adj[0]][adj[1]] == color:
+                            if adj not in bucket:
+                                bucket.append(adj)
+                                remove_pieces.append(adj)
+                        if self.board[adj[0]][adj[1]] is None:
+                            pieces_connected.append([r, c])
             for i in remove_pieces:
                 if i in bucket:
                     bucket.remove(i)
 
-
+            already_checked = []
+            for i in pieces_connected:
+                r = i[0]
+                c = i[1]
+                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
+                for adj in adjacent:
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
+                        pass
+                    else:
+                        if [adj[0], adj[1]] not in already_checked:
+                            if self.board[adj[0]][adj[1]] == self.board[i[0]][i[1]]:
+                                #print('\n\nSEEING CONNECTS\n\n')
+                                pieces_connected.append([adj[0], adj[1]])
+                                if [adj[0], adj[1]] in bucket:
+                                    #print('\n\nTHEY ARE BEING REMOVED???\n\n')
+                                    bucket.remove([adj[0], adj[1]])
+                                    potential_count -= 1
+                            already_checked.append([adj[0], adj[1]])
             #print(f'BUCKET: {bucket}')
             if len(bucket) == 1: #had an error with single capture so it runs seperately if the bucket is just 1 piece
                 r = bucket[0][0]
                 c = bucket[0][1]
                 adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
                 for i in adjacent:
-                    if self.board[i[0]][i[1]] == (color or None):
-                        return 0
+                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
+                        pass
+                    else:
+                        if self.board[i[0]][i[1]] == (color or None):
+                            return 0
                 self.board[r][c] = None
                 self.cant_play.append([r, c])
                 return 1
@@ -295,12 +325,9 @@ class GoModel:
                 self.cant_play.append(i)
             return potential_count
 
-        self.__player1.capture_count = self.__player1.capture_count + bucket_check(GamePiece(PlayerColors.WHITE))
+        self.current_player.capture_count += bucket_check(GamePiece(self.current_player.player_color.opponent()))
+        print(f'{self.current_player.player_color}:{self.current_player.capture_count}')
 
-        self.__player2.capture_count = self.__player2.capture_count + bucket_check(GamePiece(PlayerColors.BLACK))
-        print(self.__player1.capture_count)
-        print(self.__player2.capture_count)
-        print(self.board)
 
     def calculate_score(self):
         pass
@@ -355,23 +382,65 @@ class GoModel:
                     else:
                         open_spots.remove([r, c]) #This may cause an error as your removing something from a list while iteration through them
 
-    # def add_neighbors(self, piece, color, checked= []):
-    #     print('entering function')
-    #     r = piece[0]
-    #     c = piece[1]
-    #     adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
-    #     if piece in checked:
-    #         return
-    #     checked.append([piece[0], piece[1]])
-    #     for adj in adjacent:
-    #         if self.board[adj[0]][adj[1]] == color:
-    #             print('entering recursion')
-    #             self.add_neighbors([adj[0], adj[1]], color, checked)
-    #         if self.board[adj[0]][adj[1]] is None:
-    #             print('should be working')
-    #             return True
-    #     print('returning false for some reason')
-    #     return
+        # bucket = []
+        # potential_count = 0
+        # possible_opponents = []
+        # not_surrounded_pieces = []
+        # for row in range(len(self.board)):
+        #     for col in range(len(self.board[row])):
+        #         if self.board[row][col] == None:
+        #             bucket.append([row, col])
+        #             potential_count += 1
+        # for i in bucket:
+        #     r = i[0]
+        #     c = i[1]
+        #     adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
+        #     for adj in adjacent:
+        #         if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]):
+        #             pass
+        #         else:
+        #             if self.board[adj[0]][adj[1]] == None:
+        #                 if [adj[0], adj[1]] not in bucket:
+        #                     bucket.append([adj[0], adj[1]])
+        #             elif self.board[adj[0]][adj[1]] != color:
+        #                 if [r, c] not in not_surrounded_pieces:
+        #                     not_surrounded_pieces.append([r, c])
+        #                     potential_count -= 1
+        #             elif self.board[adj[0]][adj[1]] == color:
+        #                 possible_opponents.append(adj)
+        # for piece in not_surrounded_pieces:
+        #     bucket.remove(piece) #removes from bucket
+        # for piece in not_surrounded_pieces:
+        #     r = piece[0]
+        #     c = piece[1]
+        #     adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
+        #         #then needs to remove the neighbors of this piece
+        #     for i in adjacent:
+        #         if i in bucket:
+        #             return 0
+        #                 # needs_recheck.append(piece)
+        #                 #appends any piece that is not surrounded and connected to main blob
+        #     for i in adjacent:
+        #         if i in possible_opponents:
+        #             possible_opponents.remove(i)
+        #         # for i in adjacent:
+        #         #     if i in possible_opponents and not dont_remove_bc_connects:
+        #         #         possible_opponents.remove(i)
+        #         #     elif dont_remove_bc_connects:
+        #         #         if i
+        #
+        #
+        #     # print(f'\nopponents: {possible_opponents}\n')
+        # for i in possible_opponents:
+        #     if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] != color:
+        #         return 0 #gets out of the method if they aren't surrounded
+        # for i in bucket:
+        #     self.board[i[0]][i[1]] = None
+        #     self.cant_play.append(i)
+        # return potential_count
+
+
+
 
 
 # g = GoModel()
