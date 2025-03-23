@@ -9,7 +9,7 @@ def capture(g, row, col, visited, potential_count, capturing_color = None):
     #captured_color
     piece_at_position = g.board[row][col]
     print(f'Position: R{row}, C{col}, truth {piece_at_position != capturing_color}, visited{visited}, capturing_color{capturing_color} ')
-    if row < 0 or col < 0 or row >= len(g.board) or col >= len(g.board[0]):  # out of board
+    if (row < 0 or col < 0 or row >= len(g.board)) or (col >= len(g.board[0])):  # out of board
         print('Out of bounds')
         return potential_count
     if [row, col] in visited:  # already checked
@@ -21,7 +21,7 @@ def capture(g, row, col, visited, potential_count, capturing_color = None):
         return potential_count
 
     liberties = 0
-    for col_dir, row_dir in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  #Directions: 4, tuples
+    for col_dir, row_dir in [(-1, 0), (1, 0), (0, -1), (0, 1)]:#Directions: 4, tuples
         new_row = row + row_dir
         new_col = col + col_dir
         if 0 <= new_row < len(g.board) and 0 <= new_col < len(g.board[0]):
@@ -29,8 +29,7 @@ def capture(g, row, col, visited, potential_count, capturing_color = None):
                 liberties += 1
 
 
-    if liberties > 0:
-        return potential_count
+
 
     potential_count += 1
     visited.append([row, col])
@@ -44,6 +43,8 @@ def capture(g, row, col, visited, potential_count, capturing_color = None):
     # print(f'Checking right R{row}, C{col}')
     potential_count = capture(g, row, col - 1, visited, potential_count, capturing_color)
     # print(f'Checking left R{row}, C{col}')
+    if liberties > 0:
+        return potential_count
     return potential_count
 
 g = GoModel()
