@@ -308,11 +308,15 @@ class GoModel:
 
     def capture(self):
         '''
-        Runs bucket_check() for the current_player and increments their capture_count by the result
+        Runs capture_check() for all the pieces adjacent to the just set piece and increments their capture_count by the result
         '''
         def capture_check(row, col, visited, potential_count, capturing_color=None):
-            # captured_color
-            # piece_at_position = g.board[row][col]
+            '''
+            uses recursion to look if the most recent set piece has captured any enemy pieces
+
+            Returns:
+                int: returns 0 if there is no possible capture otherwise returns the amount being captured
+            '''
             if self.breakout:
                 # print('breaking out')
                 return 0
