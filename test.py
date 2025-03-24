@@ -224,7 +224,7 @@ class TestGoStep4(unittest.TestCase):
     def test_capture_count_single(self):
         #white is surrounded by black
         self.game.player1 = GamePlayer(PlayerColors.BLACK)
-        self.game.player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.player2 = GamePlayer(PlayerColors.WHITE)
         self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
         self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
         self.game.set_piece(Position(2, 1), GamePiece(PlayerColors.BLACK))
@@ -232,12 +232,12 @@ class TestGoStep4(unittest.TestCase):
         self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.BLACK))
         initial_count = self.game.player1.capture_count
         self.game.capture()
-        self.assertEqual(self.game.player1.capture_count, initial_count + 0) # 1 black should capture, might be too early to work
+        self.assertEqual(self.game.player1.capture_count, initial_count + 1) # 1 black should capture, might be too early to work
 
     def test_capture_count_group(self):
         #White group surrounded by black group
         self.game.player1 = GamePlayer(PlayerColors.BLACK)
-        self.game.player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.player2 = GamePlayer(PlayerColors.WHITE)
         self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
         self.game.set_piece(Position(1, 2), GamePiece(PlayerColors.WHITE))
         self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
@@ -249,13 +249,13 @@ class TestGoStep4(unittest.TestCase):
 
         initial_count = self.game.player1.capture_count
         self.game.capture()
-        self.assertEqual(self.game.player1.capture_count, initial_count + 0)#should be 2, might not work
+        self.assertEqual(self.game.player1.capture_count, initial_count + 2)#should be 2, might not work
 
     def test_capture_count_no_capture(self):
         #White piece with liberties
 
         self.game.player1 = GamePlayer(PlayerColors.BLACK)
-        self.game.player1 = GamePlayer(PlayerColors.WHITE)
+        self.game.player2 = GamePlayer(PlayerColors.WHITE)
         self.game.set_piece(Position(1, 1), GamePiece(PlayerColors.WHITE))
         self.game.set_piece(Position(0, 1), GamePiece(PlayerColors.BLACK))
         self.game.set_piece(Position(1, 0), GamePiece(PlayerColors.BLACK))
