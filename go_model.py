@@ -104,6 +104,9 @@ class GoModel:
 
         self.cant_play = []
         self.checked = []
+        self.last_placed = None
+        self.breakout = False
+        self.visited = []
 
     # Properties
     @property
@@ -198,6 +201,7 @@ class GoModel:
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise ValueError('Out of bounds.')
         if self.is_valid_placement(pos, piece):
+            self.last_placed = [pos.row, pos.col]
             self.__board[pos.row][pos.col] = piece
             self.moves[self.move_num] = self.copy_board() #creates the previous board onto the moves dict
             # self.previous_board = self.moves.pop(self.move_num)
@@ -306,134 +310,85 @@ class GoModel:
         '''
         Runs bucket_check() for the current_player and increments their capture_count by the result
         '''
-        def bucket_check(color):
-            '''
-            Uses a complex string of for loops to detect whether there are pieces being captured
-            if there are it will return the ammount that has been captured if not it will return 0
+        def capture_check(row, col, visited, potential_count, capturing_color=None):
+            # captured_color
+            # piece_at_position = g.board[row][col]
+            if self.breakout:
+                # print('breaking out')
+                return 0
+            if row < 0 or col < 0 or row >= len(self.board) or col >= len(self.board[0]):  # out of board
+                # print('Out of bounds')
+                return potential_count
+            piece_at_position = self.board[row][col]
+            # print(
+            #     f'Position: R{row}, C{col}, truth {piece_at_position != capturing_color}, visited{visited}, capturing_color{capturing_color} ')
+            if [row, col] in visited:  # already checked
+                # print('Position already checked')
+                return potential_count
+            if piece_at_position == capturing_color:  # if it runs into the color that is trying to surround returns to call function
+                #     # print(f'Position: R{row}, C{col}, truth {piece_at_position != color}, visited{visited}, color{color} ')
+                # print('ran into surrounding color')
+                return potential_count
 
-            Returns:
-                int: returns 0 if there are no peices being captured otherwise returns the ammount being captured
-            '''
-            bucket = []
-            potential_count = 0
-            possible_opponents = []
-            not_surrounded_pieces = []
-            remove_pieces = []
-            pieces_connected = []
-            #checked = []
-            #notes all of the cordinates of the pieces of the specified color
-            for row in range(len(self.board)):
-                for col in range(len(self.board[row])):
-                    if self.board[row][col] != None and self.board[row][col] == color:
-                        bucket.append([row, col])
-                        potential_count += 1
-            for i in bucket: #this for loop looks at all of the adjacent spots to all the pieces in bucket
-                r = i[0]
-                c = i[1]
-                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-                for adj in adjacent:
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if self.board[adj[0]][adj[1]] == color: #adds any piece that is the same color and not already in the bucket
-                            if [adj[0], adj[1]] not in bucket:
-                                bucket.append([adj[0], adj[1]])
-                        if self.board[adj[0]][adj[1]] is None: #if a piece has None as an adjacent it's not surrounded so it gets added to not_surrounded_pieces
-                            if [r, c] not in not_surrounded_pieces:
-                                not_surrounded_pieces.append([r, c])
-                                potential_count -= 1
-                        elif self.board[adj[0]][adj[1]] != color: #creates a list of possible_opponenets pieces that might be surrounding
-                            possible_opponents.append(adj)
-            for piece in not_surrounded_pieces: #now we cycle through not_surrounded removing them from the bucket
-                for i in bucket: #just a for loop here to verify that I remove it all even if there are duplicates
-                    if i == piece:
-                        bucket.remove(piece) #removes from bucket
-            for piece in not_surrounded_pieces: #now we cycle through them again and if the not surrounded it connected
-                # to one of the pieces in bucket it removes that piece from bucket as it can't be surrounded if its connected
-                #to a piece that has a None as a neighbor
-                r = piece[0]
-                c = piece[1]
-                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-                #then needs to remove the neighbors of this piece
-                for i in adjacent:
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if i in bucket:
-                            bucket.remove([i[0], i[1]]) #Was failing here
-                            potential_count -= 1
+            if piece_at_position is None:
+                self.breakout = True
+                potential_count = 0
 
-                for i in adjacent: #removes any possible opponents that is near not_surrounded
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if i in possible_opponents:
-                            possible_opponents.remove(i)
+            potential_count += 1
+            visited.append([row, col])
 
-            for i in bucket: #This for loop explores all the neighbors that are the same color. if any of them are connected to
-                r = i[0]
-                c = i[1]
-                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-                for adj in adjacent:
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if self.board[adj[0]][adj[1]] == color:
-                            if adj not in bucket:
-                                bucket.append(adj)
-                                remove_pieces.append(adj)
-                                potential_count+=1
-                        if self.board[adj[0]][adj[1]] is None:
-                            pieces_connected.append([r, c])
-            for i in remove_pieces:
-                if i in bucket:
-                    bucket.remove(i)
-                    potential_count -= 1
 
-            already_checked = []
-            for i in pieces_connected:
-                r = i[0]
-                c = i[1]
-                adjacent = [[1+r, c], [-1+r, c], [r, 1+c], [r, -1+c]]
-                for adj in adjacent:
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if [adj[0], adj[1]] not in already_checked:
-                            if self.board[adj[0]][adj[1]] == self.board[i[0]][i[1]]:
-                                pieces_connected.append([adj[0], adj[1]])
-                                if [adj[0], adj[1]] in bucket:
-                                    bucket.remove([adj[0], adj[1]])
-                                    potential_count -= 1
-                            already_checked.append([adj[0], adj[1]])
-            #print(f'BUCKET: {bucket}')
-            if len(bucket) == 1: #had an error with single capture so it runs seperately if the bucket is just 1 piece
-                r = bucket[0][0]
-                c = bucket[0][1]
-                adjacent = [[1 + r, c], [-1 + r, c], [r, 1 + c], [r, -1 + c]]
-                for i in adjacent:
-                    if adj[0] < 0 or adj[1] < 0 or adj[0] >= len(self.board) or adj[1] >= len(self.board[0]): #cuts off space if off board
-                        pass
-                    else:
-                        if self.board[i[0]][i[1]] == (color or None):
-                            return 0
-                self.board[r][c] = None
-                self.cant_play.append([r, c])
-                return 1
-
-            #print(f'\nopponents: {possible_opponents} {color}\n')
-
-            for i in possible_opponents: #finally cycles through possible opponents returning 0 if any of the possible_opponent
-                # places are empty or the same color
-                if self.board[i[0]][i[1]] is None or self.board[i[0]][i[1]] == color:
-                    return 0 #gets out of the method if they aren't surrounded
-            for i in bucket: #cycles through bucket making them empty spaces and appending them to cant_play
-                self.board[i[0]][i[1]] = None
-                self.cant_play.append(i)
+            potential_count = capture_check(row + 1, col, visited, potential_count, capturing_color)
+            potential_count = capture_check(row - 1, col, visited, potential_count, capturing_color)
+            potential_count = capture_check(row, col + 1, visited, potential_count, capturing_color)
+            potential_count = capture_check(row, col - 1, visited, potential_count, capturing_color)
             return potential_count
 
-        self.current_player.capture_count += bucket_check(GamePiece(self.current_player.player_color.opponent()))
-        #print(f'{self.current_player.player_color}:{self.current_player.capture_count}')
+        color = self.board[self.last_placed[0]][self.last_placed[1]]
+        self.breakout = False
+        self.visited = []
+        down = capture_check(self.last_placed[0] + 1, self.last_placed[1], self.visited, 0, color)
+        # print(f'\n\n{self.current_player.player_color}:{down}\n\n')
+        self.current_player.capture_count += down
+        if down > 0:
+            for cords in self.visited:
+                self.board[cords[0]][cords[1]] = None
+                self.cant_play.append(cords)
+        self.breakout = False
+        self.visited = []
+
+        up = capture_check(self.last_placed[0] - 1, self.last_placed[1], self.visited, 0, color)
+        # print(f'\n\n{self.current_player.player_color}:{up}\n\n')
+        self.current_player.capture_count += up
+        if up > 0:
+            for cords in self.visited:
+                self.board[cords[0]][cords[1]] = None
+                self.cant_play.append(cords)
+        self.breakout = False
+        self.visited = []
+
+        right = capture_check(self.last_placed[0], self.last_placed[1] + 1, self.visited, 0, color)
+        # print(f'\n\n{self.current_player.player_color}:{right}\n\n')
+        self.current_player.capture_count += right
+        if right > 0:
+            for cords in self.visited:
+                self.board[cords[0]][cords[1]] = None
+                self.cant_play.append(cords)
+        self.breakout = False
+        self.visited = []
+
+        left = capture_check(self.last_placed[0], self.last_placed[1] - 1, self.visited, 0, color)
+        # print(f'\n\n{self.current_player.player_color}:{left}\n\n')
+        self.current_player.capture_count += left
+        if left > 0:
+            for cords in self.visited:
+                self.board[cords[0]][cords[1]] = None
+                self.cant_play.append(cords)
+        self.breakout = False
+        self.visited = []
+
+        # print(f'\n{self.current_player.player_color}:{self.current_player.capture_count}\n')
+
 
 
     def calculate_score(self):
