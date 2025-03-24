@@ -142,6 +142,9 @@ class GoModel:
             List: returns the Board
         '''
         return self.__board
+    # @board.setter
+    # def board(self, board): #COMMENT THIS OUT IF SUMBITTING!!! :)
+    #     self.__board = board
     @property
     def message(self):
         '''
@@ -179,7 +182,7 @@ class GoModel:
             raise TypeError
         if (pos.row < 0 or pos.row >= self.__nrows) or (pos.col < 0 or pos.col >= self.__ncols):
             raise ValueError('Out of bounds.')
-        print(f"Getting piece at: ({pos.row}, {pos.col})")
+        #print(f"Getting piece at: ({pos.row}, {pos.col})")
         return self.__board[pos.row][pos.col]
 
     #should be working, but we need is_valid_placement to work first
@@ -264,6 +267,9 @@ class GoModel:
         Returns:
             bool: True if the placement is valid false if the placement is not valid
         '''
+        # if piece is None:
+        #     self.message = 'Invalid placement'
+        #     return False
         if not piece.is_valid_placement(pos, self.board):
             self.message = ('Invalid Placement: Either not within bounds,\n'
                             'or piece is already surrounded by opponent pieces')
@@ -376,11 +382,13 @@ class GoModel:
                             if adj not in bucket:
                                 bucket.append(adj)
                                 remove_pieces.append(adj)
+                                potential_count+=1
                         if self.board[adj[0]][adj[1]] is None:
                             pieces_connected.append([r, c])
             for i in remove_pieces:
                 if i in bucket:
                     bucket.remove(i)
+                    potential_count -= 1
 
             already_checked = []
             for i in pieces_connected:
@@ -393,10 +401,8 @@ class GoModel:
                     else:
                         if [adj[0], adj[1]] not in already_checked:
                             if self.board[adj[0]][adj[1]] == self.board[i[0]][i[1]]:
-                                #print('\n\nSEEING CONNECTS\n\n')
                                 pieces_connected.append([adj[0], adj[1]])
                                 if [adj[0], adj[1]] in bucket:
-                                    #print('\n\nTHEY ARE BEING REMOVED???\n\n')
                                     bucket.remove([adj[0], adj[1]])
                                     potential_count -= 1
                             already_checked.append([adj[0], adj[1]])
